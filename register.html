@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    /* Animated Gradient Background */
+    body {
+      height: 120vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(
+        -45deg,
+        #00e0c6,
+        #259487,
+        #172129,
+        #3a0ca3,
+        #3a0ca3
+      );
+      /* background: linear-gradient(-45deg, #00e0c6, #259487, #ff00cc, #172129, #3a0ca3, #3a0ca3); */
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+    }
+
+    @keyframes gradientMove {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* Form Styling */
+    form {
+      width: 100%;
+      max-width: 380px;
+      padding: 30px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    form h1 {
+      color: #fff;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    form input {
+      width: 100%;
+      padding: 14px 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+    }
+
+    form input::placeholder {
+      color: #ddd;
+    }
+
+    form button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      background: linear-gradient(90deg, #3a0ca3, #00e0c6);
+      color: white;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #00e0c6, #3a0ca3);
+    }
+
+    /* Social buttons */
+    .continue {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .continue a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: white;
+      transition: 0.3s;
+    }
+
+    .continue a:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    .continue .google {
+      background: #db4437;
+    }
+    .continue .facebook {
+      background: #1877f2;
+    }
+    .continue .twitter {
+      background: black;
+    }
+
+    .continue .register {
+      background: transparent;
+      color: #fff;
+      text-decoration: underline;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Responsive */
+    @media (max-width: 450px) {
+      form {
+        width: 100%;
+        padding: 20px;
+      }
+
+      form h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+  <body>
+    <div class="login">
+      <form action="" onsubmit="goHome(event)" method="POST">
+        <h1>DI STUDIO</h1>
+        <input type="text" placeholder="Full Name" name="name" required />
+        <input type="email" placeholder="Email" name="email" required />
+        <input
+          type="name"
+          placeholder="@username"
+          name="name"
+          minlength="6"
+          maxlength="20"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          name="password"
+          minlength="6"
+          maxlength="20"
+          required
+        />
+        <button type="submit">Sign UP</button>
+
+        <div class="continue">
+          <a
+            href="https://accounts.google.com/v3/signin/identifier?authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F&ec=GAlAwAE&hl=en_GB&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession&dsh=S1696088079%3A1755514576651200"
+            class="google"
+            ><i class="fab fa-google"></i>Sign up with Google</a
+          >
+          <a href="https://www.facebook.com/" class="facebook"
+            ><i class="fab fa-facebook-f"></i> Sign up with Facebook</a
+          >
+          <a href="https://www.twitter.com/" class="twitter"
+            ><i class="fa-brands fa-x-twitter"></i> Sign up with X</a
+          >
+          <a href="decipher.html" class="register"
+            >Already have an account? Login</a
+          >
+        </div>
+      </form>
+    </div>
+
+    <!-- Small JS animation for form -->
+    <script>
+      const form = document.querySelector("form");
+      form.style.opacity = "0";
+      setTimeout(() => {
+        form.style.transition = "opacity 1.5s ease";
+        form.style.opacity = "1";
+      }, 300);
+
+      //   Onsubmit
+      function goHome(e) {
+        e.preventDefault();
+        window.location.href = "decipher.html";
+      }
+    </script>
+  </body>
+</html>
