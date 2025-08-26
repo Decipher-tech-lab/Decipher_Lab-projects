@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DI Editor — Fast, Beautiful, In‑Browser Code Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- ========= THEME ========= -->
+    <style>
+      :root {
+        /* Two-color theme */
+        --dark: #0a0f1e; /* deep navy (editor-friendly) */
+        --blue: #00a8e8; /* neon cyan-blue accent */
+        /* derived neutrals (tints of dark) — stay within the two-color family */
+        --dark-2: #0d152b;
+        --dark-3: #0f1b35;
+        --ink: #d7e9f4;
+        --muted: #9db8c6;
+        --glass: rgba(255, 255, 255, 0.06);
+        --line: rgba(0, 168, 232, 0.25);
+        --line-2: rgba(215, 233, 244, 0.08);
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--line-2) inset;
+        --radius: 14px;
+        --radius-sm: 10px;
+        --blur: blur(12px);
+        --speed: 0.6s;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--ink);
+        background: radial-gradient(
+            1400px 700px at 10% -10%,
+            #0c1730 0%,
+            #0a1124 45%,
+            var(--dark) 60%
+          )
+          no-repeat fixed;
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      /* ======= Layout helpers ======= */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
+      .section {
+        padding: 84px 0;
+      }
+      .grid {
+        display: grid;
+        gap: 20px;
+      }
+      .two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (max-width: 960px) {
+        .two,
+        .three {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ======= Top Nav ======= */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: linear-gradient(
+          to bottom,
+          rgba(10, 15, 30, 0.95),
+          rgba(10, 15, 30, 0.9)
+        );
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--line-2);
+      }
+      .nav-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        height: 64px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+      }
+      .logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0, 168, 232, 0.35);
+        background: conic-gradient(
+          from 180deg at 50% 50%,
+          rgba(0, 168, 232, 0.18),
+          rgba(0, 168, 232, 0.6),
+          rgba(0, 168, 232, 0.18)
+        );
+      }
+      .brand b {
+        color: var(--blue);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .nav-links a {
+        padding: 8px 12px;
+        border-radius: 10px;
+        color: var(--muted);
+        border: 1px solid transparent;
+        transition: 0.2s ease;
+      }
+      .nav-links a:hover {
+        color: var(--ink);
+        border-color: var(--line);
+      }
+      .cta {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 168, 232, 0.15),
+          rgba(0, 168, 232, 0.55)
+        );
+        color: #001018;
+        border: 1px solid rgba(0, 168, 232, 0.35);
+        box-shadow: 0 0 0 1px rgba(0, 168, 232, 0.25) inset,
+          0 8px 24px rgba(0, 168, 232, 0.18);
+        color: #ecf9ff;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--line-2);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0)
+        );
+        transition: transform 0.15s ease, border-color 0.2s ease,
+          box-shadow 0.2s ease;
+        will-change: transform;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: var(--line);
+        box-shadow: var(--shadow);
+      }
+      
+      /* User icon styling */
+      .user-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.02)
+        );
+        color: var(--muted);
+        transition: all 0.2s ease;
+      }
+      .user-icon:hover {
+        color: var(--ink);
+        border-color: var(--blue);
+        background: linear-gradient(
+          180deg,
+          rgba(0, 168, 232, 0.15),
+          rgba(0, 168, 232, 0.05)
+        );
+        transform: translateY(-1px);
+      }
+
+      /* ======= HAMBURGER MENU STYLES ======= */
+      .hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 25px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 100;
+      }
+      
+      .hamburger span {
+        width: 100%;
+        height: 2px;
+        background-color: var(--ink);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+      }
+      
+      @media (max-width: 768px) {
+        .hamburger {
+          display: flex;
+        }
+        
+        .nav-links {
+          position: fixed;
+          top: 0;
+          right: -100%;
+          width: 100%;
+          height: 100vh;
+          background: var(--dark-2);
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 30px;
+          transition: right 0.3s ease-in-out;
+          border-left: 1px solid var(--line-2);
+          box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+          padding: 80px 20px 40px;
+        }
+        
+        .nav-links.active {
+          right: 0;
+        }
+        
+        .nav-links a {
+          font-size: 1.2rem;
+          padding: 12px 20px;
+          width: 100%;
+          text-align: center;
+        }
+        
+        .user-icon {
+          margin-top: 20px;
+        }
+      }
+
+      /* ======= HERO ======= */
+      .hero {
+        position: relative;
+        isolation: isolate;
+        min-height: clamp(640px, 80vh, 860px);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        margin-top: 64px; /* To account for fixed navbar */
+      }
+      /* canvas backdrop */
+      #bgCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            1000px 600px at 85% 20%,
+            rgba(0, 168, 232, 0.12),
+            transparent 50%
+          ),
+          radial-gradient(
+            900px 500px at 15% 80%,
+            rgba(0, 168, 232, 0.1),
+            transparent 55%
+          );
+        z-index: -1;
+      }
+      /* soft vignette */
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(
+            60% 60% at 50% 40%,
+            rgba(0, 168, 232, 0.08) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            45% 45% at 85% 15%,
+            rgba(0, 168, 232, 0.1) 0%,
+            transparent 55%
+          );
+        filter: blur(20px);
+        z-index: -1;
+      }
+      .hero-card {
+        display: grid;
+        gap: 20px;
+        align-items: center;
+        grid-template-columns: 1.2fr 1fr;
+        width: min(1100px, 96vw);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius);
+        padding: 26px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+      @media (max-width: 960px) {
+        .hero-card {
+          grid-template-columns: 1fr;
+          padding: 20px;
+        }
+      }
+      .kicker {
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+      }
+      .title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        line-height: 1.15;
+        margin: 4px 0 8px;
+        font-weight: 800;
+        background: linear-gradient(90deg, #e8f7ff, #b8e9ff 45%, var(--blue));
+        -webkit-background-clip: text;
+        color: transparent;
+        text-shadow: 0 6px 60px rgba(0, 168, 232, 0.15);
+      }
+      .lead {
+        color: #cfe7f4;
+        max-width: 56ch;
+        opacity: 0.95;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+      }
+      .subtle {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      /* Code frame (hero right) */
+      .code-frame {
+        position: relative;
+        height: 320px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #0b1429, #0a1124);
+        border: 1px solid var(--line-2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45),
+          0 0 32px rgba(0, 168, 232, 0.08) inset;
+      }
+      .code-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line-2);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .r {
+        background: #ef476f;
+      }
+      .y {
+        background: #ffd166;
+      }
+      .g {
+        background: #06d6a0;
+      }
+      pre {
+        margin: 0;
+        padding: 14px 16px;
+        height: calc(100% - 40px);
+        overflow: auto;
+        font: 500 14px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        color: #eaf6ff;
+      }
+      .kw {
+        color: #7fd8ff;
+      }
+      .fn {
+        color: #8be9fd;
+      }
+      .str {
+        color: #59ffd7;
+      }
+      .cm {
+        color: #6b93a3;
+      }
+      .hl {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 168, 232, 0.18),
+          rgba(0, 168, 232, 0) 70%
+        );
+        border-left: 2px solid var(--blue);
+        padding-left: 10px;
+      }
+
+      /* Remove scrollbar from code block */
+      #codeBlock {
+        overflow: hidden !important;
+      }
+
+      /* ======= FEATURES ======= */
+      .section-head {
+        margin-bottom: 22px;
+      }
+      .section-kicker {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 0.8rem;
+      }
+      .section-title {
+        font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+        margin: 6px 0 4px;
+        font-weight: 800;
+        background: linear-gradient(90deg, #e7f7ff, var(--blue));
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .feature {
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius);
+        padding: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        box-shadow: var(--shadow);
+        transition: transform 0.2s ease, box-shadow 0.25s ease,
+          border-color 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+      .feature:hover {
+        transform: translateY(-5px);
+        border-color: var(--line);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--line) inset;
+      }
+      .feature:active {
+        transform: translateY(-2px);
+      }
+      .feature i {
+        --s: 48px;
+        width: var(--s);
+        height: var(--s);
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 168, 232, 0.18),
+          rgba(0, 168, 232, 0.05)
+        );
+        border: 1px solid rgba(0, 168, 232, 0.25);
+        box-shadow: 0 6px 24px rgba(0, 168, 232, 0.2) inset,
+          0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+        margin-bottom: 10px;
+        color: #09131f;
+      }
+      .feature h3 {
+        margin: 4px 0 6px;
+      }
+      .feature p {
+        color: #cfe7f4;
+      }
+
+      /* ======= SHOWCASE (Editor demo) ======= */
+      .showcase {
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        border-bottom: 1px solid var(--line-2);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .tab {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line-2);
+        color: var(--muted);
+        cursor: pointer;
+        transition: 0.2s;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0)
+        );
+      }
+      .tab.active {
+        color: #001018;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 168, 232, 0.2),
+          rgba(0, 168, 232, 0.5)
+        );
+        border-color: rgba(0, 168, 232, 0.5);
+      }
+      .pane {
+        display: none;
+        padding: 18px;
+      }
+      .pane.active {
+        display: block;
+      }
+      .kbd {
+        font: 600 12px/1 ui-monospace, monospace;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--line-2);
+        color: var(--muted);
+      }
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+      .ok {
+        color: #59ffd7;
+      }
+
+      /* ======= TESTIMONIALS ======= */
+      .cards {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (max-width: 960px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        padding: 18px;
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: var(--line);
+        border: 2px solid var(--line);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 168, 232, 0.3),
+          rgba(0, 168, 232, 0.1)
+        );
+        border: 1px solid rgba(0, 168, 232, 0.35);
+      }
+
+      .avatar img {
+        border-radius: 50%;
+      }
+      .stars {
+        letter-spacing: 0.12em;
+        color: #ffd166;
+      }
+
+      /* ======= FAQ (Accordion) ======= */
+      .faq {
+        display: grid;
+        gap: 10px;
+      }
+      .qa {
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+      }
+      .q {
+        width: 100%;
+        text-align: left;
+        padding: 14px 16px;
+        background: transparent;
+        color: var(--ink);
+        border: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        cursor: pointer;
+      }
+      .q span {
+        color: var(--muted);
+      }
+      .a {
+        padding: 0 16px 14px 16px;
+        color: #cfe7f4;
+        display: none;
+      }
+      .qa.open .a {
+        display: block;
+      }
+      .qa.open .q {
+        border-bottom: 1px solid var(--line-2);
+      }
+      .chev {
+        transition: transform 0.2s ease;
+      }
+      .qa.open .chev {
+        transform: rotate(180deg);
+      }
+
+      /* ======= FOOTER ======= */
+      footer {
+        padding: 50px 0;
+        border-top: 1px solid var(--line-2);
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+      }
+      .foot-wrap {
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .chips {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line-2);
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* ======= Reveal on scroll ======= */
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity var(--speed) ease, transform var(--speed) ease;
+      }
+      .reveal.show {
+        opacity: 1;
+        transform: none;
+        transition-delay: 0.1s;
+      }
+      .delay-1 {
+        transition-delay: 0.08s;
+      }
+      .delay-2 {
+        transition-delay: 0.16s;
+      }
+      .delay-3 {
+        transition-delay: 0.24s;
+      }
+
+      /* ======= POPUP MODAL STYLES ======= */
+      .popup-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(10, 15, 30, 0.9);
+        backdrop-filter: blur(8px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 20px;
+      }
+
+      .popup-content {
+        background: linear-gradient(180deg, var(--dark-2), var(--dark-3));
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .popup-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+      }
+
+      .popup-close:hover {
+        color: var(--ink);
+        background: var(--glass);
+      }
+
+      .popup-body h3 {
+        color: var(--blue);
+        margin-top: 0;
+        font-size: 1.5rem;
+      }
+
+      .popup-body p {
+        line-height: 1.6;
+        color: var(--ink);
+      }
+
+      /* Animation for popup */
+      .popup-content {
+        animation: popupFadeIn 0.3s ease-out;
+      }
+
+      @keyframes popupFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Mobile responsiveness for popup */
+      @media (max-width: 600px) {
+        .popup-content {
+          padding: 20px;
+          margin: 10px;
+        }
+        
+        .popup-body h3 {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================= NAV ================= -->
+    <header class="nav">
+      <div class="container nav-wrap">
+        <a class="brand" href="#top" aria-label="DI Editor Home" title="Decipher Inovation Editor">
+          <span class="logo" aria-hidden="true"></span>
+          DI <b>Editor</b>
+        </a>
+        
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="nav-links" id="navLinks">
+          <a href="#features"><i class="fas fa-mobile-alt"></i> Features</a>
+          <a href="#showcase"><i class="fas fa-code"></i> Demo</a>
+          <a href="#faq"><i class="fas fa-question-circle"></i>FAQ</a>
+          <a class="btn cta" href="#get">Launch Editor</a>
+          <a href="/login" class="user-icon" aria-label="Login">
+            <i class="fas fa-user"></i>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= HERO ================= -->
+    <section id="top" class="hero">
+      <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+      <div class="hero-card container reveal">
+        <div>
+          <div class="kicker">Next‑Gen, In‑Browser</div>
+          <h1 class="title">
+            Code, collaborate, and ship — all in one beautiful editor.
+          </h1>
+          <p class="lead">
+            DI Editor brings desktop‑grade performance to your browser with
+            real‑time collaboration, AI‑assisted coding, and a distraction‑free
+            dark theme.
+          </p>
+          <div class="hero-actions">
+            <a class="btn cta" href="#showcase">Try the Demo</a>
+            <a class="btn" href="#features">Explore Features</a>
+          </div>
+          <p class="subtle">
+            No installs · Works on any device · Private by default
+          </p>
+        </div>
+
+        <!-- Code Window -->
+        <div class="code-frame reveal delay-1" aria-label="Code sample">
+          <div class="code-head">
+            <span class="dot r"></span><span class="dot y"></span
+            ><span class="dot g"></span>
+            <span class="kbd">app.ts</span>
+          </div>
+          <pre id="codeBlock"><span class="cm">// Ultra-tiny DI server</span>
+<span class="kw">import</span> <span class="str">http</span> <span class="kw">from</span> <span class="str">'node:http'</span>;
+
+<span class="kw">const</span> <span class="fn">router</span> = {
+  <span class="fn">GET</span>: { <span class="str">'/'</span>: <span class="kw">async</span> (_req, res) =&gt; {
+    res.<span class="fn">writeHead</span>(<span class="hl">200</span>, { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> });
+    res.<span class="fn">end</span>(JSON.<span class="fn">stringify</span>({ ok: <span class="kw">true</span>, msg: <span class="str">'Hello from DI'</span> }));
+  } }
+};
+
+<span class="kw">const</span> <span class="fn">server</span> = http.<span class="fn">createServer</span>(() => {
+  <span class="kw">const</span> route = router[req.<span class="fn">method</span>]?.[req.<span class="fn">url</span>];
+  <span class="kw">return</span> route ? route(req, res) : (res.<span class="fn">statusCode</span> = 404, res.<span class="fn">end</span>(<span class="str">'Not found'</span>));
+});
+
+server.<span class="fn">listen</span>(<span class="hl">8080</span>, () =&gt; console.<span class="fn">log</span>(<span class="str">'DI up on :8080'</span>));</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FEATURES ================= -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Why DI Editor</div>
+          <h2 class="section-title">Focused. Fast. Collaborative.</h2>
+        </div>
+
+        <div class="grid three">
+          <div class="feature reveal">
+            <i aria-hidden="true">⚡</i>
+            <h3>Instant Performance</h3>
+            <p>
+              Native‑like speed in your browser with smart caching and a
+              zero‑jank rendering pipeline.
+            </p>
+          </div>
+          <div class="feature reveal delay-1">
+            <i aria-hidden="true">🤝</i>
+            <h3>Live Collaboration</h3>
+            <p>
+              Pair‑program with shared cursors, presence, and conflict‑free
+              merging — no setup.
+            </p>
+          </div>
+          <div class="feature reveal delay-2">
+            <i aria-hidden="true">🧠</i>
+            <h3>AI Assist</h3>
+            <p>
+              Inline suggestions, explain‑this‑code, and quick‑fixes tuned for
+              modern stacks.
+            </p>
+          </div>
+          <div class="feature reveal">
+            <i aria-hidden="true">🧩</i>
+            <h3>Extensions</h3>
+            <p>
+              Theme it, lint it, format it. A lightweight API for building your
+              own plugins.
+            </p>
+          </div>
+          <div class="feature reveal delay-1">
+            <i aria-hidden="true">🔐</i>
+            <h3>Private by Default</h3>
+            <p>
+              Projects stay on your device unless you opt‑in to sync. Your code,
+              your rules.
+            </p>
+          </div>
+          <div class="feature reveal delay-2">
+            <i aria-hidden="true">⌨</i>
+            <h3>Pro Shortcuts</h3>
+            <p>
+              Command palette, multi‑cursor, and a keyboard‑first workflow out
+              of the box.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SHOWCASE / DEMO ================= -->
+    <section id="showcase" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Product Demo</div>
+          <h2 class="section-title">A familiar editor, redesigned.</h2>
+        </div>
+
+        <div class="showcase reveal">
+          <div class="bar">
+            <button class="tab active" data-tab="code">Code</button>
+            <button class="tab" data-tab="terminal">Terminal</button>
+            <button class="tab" data-tab="git">Git</button>
+            <span class="chip" style="margin-left: auto"
+              >Press <kbd class="kbd">⌘</kbd> + <kbd class="kbd">K</kbd> for
+              palette</span
+            >
+          </div>
+
+          <div id="pane-code" class="pane active">
+            <pre><span class="cm">// components/Button.tsx</span>
+<span class="kw">type</span> Props = { label: <span class="kw">string</span>; onClick?: () =&gt; <span class="kw">void</span> };
+
+<span class="kw">export</span> <span class="kw">const</span> Button = ({ label, onClick }: Props) =&gt; {
+  <span class="kw">return</span> &lt;button className=<span class="str">"btn"</span> onClick={onClick}&gt;{label}&lt;/button&gt;;
+};</pre>
+          </div>
+
+          <div id="pane-terminal" class="pane" aria-hidden="true">
+            <pre>$ <span class="kw">npm</span> run build
+<span class="ok">✔</span> Compiled successfully in <span class="hl">2.8s</span>
+$ <span class="kw">npm</span> start
+<span class="ok">✔</span> Server running at <span class="str">http://localhost:5173</span></pre>
+          </div>
+
+          <div id="pane-git" class="pane" aria-hidden="true">
+            <pre><span class="kw">git</span> status
+On branch <span class="str">main</span>
+Your branch is up to date with <span class="str">'origin/main'</span>.
+
+Changes to be committed:
+  <span class="kw">new file:</span>   components/Button.tsx
+
+<span class="kw">git</span> commit -m <span class="str">"feat(ui): add button"</span>
+<span class="ok">[main abc123]</span> feat(ui): add button</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TESTIMONIALS ================= -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Developers ❤ It</div>
+          <h2 class="section-title">What our users say</h2>
+        </div>
+
+        <div class="cards">
+          <div class="card reveal">
+            <div class="row">
+              <div class="avatar"><img src="img/ablinking.jpg" alt=""></div>
+              <div>
+                <strong>Jane</strong>
+                <div class="stars">★★★★★</div>
+              </div>
+            </div>
+            <p>
+              “The latency feels impossible for a web app. It’s become my daily
+              driver.”
+            </p>
+          </div>
+          <div class="card reveal delay-1">
+            <div class="row">
+              <div class="avatar"><img src="img/ab.jpg" alt=""></div>
+              <div>
+                <strong>Kwame</strong>
+                <div class="stars">★★★★★</div>
+              </div>
+            </div>
+            <p>
+              “Collab is seamless. Shared cursors + palette = pair programming
+              heaven.”
+            </p>
+          </div>
+          <div class="card reveal delay-2">
+            <div class="row">
+              <div class="avatar"><img src="img/office.jpg" alt=""></div>
+              <div>
+                <strong>Ada</strong>
+                <div class="stars">★★★★☆</div>
+              </div>
+            </div>
+            <p>
+              “The two‑color theme is gorgeous and easy on my eyes during long
+              sessions.”
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FAQ ================= -->
+    <section id="faq" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">FAQ</div>
+          <h2 class="section-title">Common questions</h2>
+        </div>
+
+        <div class="faq">
+          <div class="qa reveal">
+            <button class="q">
+              <span>Is DI Editor free?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              Personal use is free. Teams can upgrade for shared workspaces and
+              SSO.
+            </div>
+          </div>
+          <div class="qa reveal delay-1">
+            <button class="q">
+              <span>Does it work offline?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              Yes. Your projects cache locally; cloud sync is opt‑in.
+            </div>
+          </div>
+          <div class="qa reveal delay-2">
+            <button class="q">
+              <span>Which languages are supported?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              JS/TS, Python, C/C++, Go, Rust, and more via extensions.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer id="get">
+      <div class="container foot-wrap">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span> DI <b>Editor</b>
+        </div>
+        <div class="chips">
+          <span class="chip">Dark Theme</span>
+          <span class="chip">Live Collab</span>
+          <span class="chip">AI Assist</span>
+        </div>
+        <a class="btn cta" href="#top">Launch Now</a>
+      </div>
+    </footer>
+
+    <!-- ========= POPUP MODAL ========= -->
+    <div class="popup-modal" id="popupModal">
+      <div class="popup-content">
+        <button class="popup-close" id="popupClose">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="popup-body" id="popupBody"></div>
+      </div>
+    </div>
+
+    <!-- ========= SCRIPTS ========= -->
+    <script>
+      /* ===========================
+       Reveal on scroll
+    ============================ */
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add("show");
+              io.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.12 }
+      );
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+      /* ===========================
+       Tabs (Showcase)
+    ============================ */
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach((t) => {
+        t.addEventListener("click", () => {
+          tabs.forEach((x) => x.classList.remove("active"));
+          document
+            .querySelectorAll(".pane")
+            .forEach((p) => p.classList.remove("active"));
+          t.classList.add("active");
+          document
+            .getElementById("pane-" + t.dataset.tab)
+            .classList.add("active");
+        });
+      });
+
+      /* ===========================
+       FAQ accordion
+    ============================ */
+      document.querySelectorAll(".qa .q").forEach((q) => {
+        q.addEventListener("click", () =>
+          q.parentElement.classList.toggle("open")
+        );
+      });
+
+      /* ===========================
+       Typewriter for hero code
+    ============================ */
+      (function typeHero() {
+        const pre = document.getElementById("codeBlock");
+        const full = pre.innerHTML;
+        const plain = pre.textContent; // measure total chars to type visibly
+        pre.innerHTML = "";
+        let i = 0,
+          buf = "",
+          fast = 0;
+        // simple stream that respects html tags by writing chunks from original innerHTML
+        const tmp = document.createElement("div");
+        tmp.innerHTML = full;
+        const walker = document.createTreeWalker(
+          tmp,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+        const textNodes = [];
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+        const pieces = textNodes.map((n) => n.nodeValue);
+
+        // replace text nodes one-by-one while keeping spans intact
+        let pieceIndex = 0,
+          charIndex = 0;
+        function step() {
+          if (pieceIndex >= pieces.length) {
+            pre.innerHTML = full;
+            return;
+          }
+          const current = pieces[pieceIndex];
+          charIndex++;
+          if (charIndex > current.length) {
+            pieceIndex++;
+            charIndex = 0;
+          }
+          // rebuild a partial DOM up to pieceIndex
+          const clone = tmp.cloneNode(true);
+          let count = 0;
+          const w = document.createTreeWalker(
+            clone,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+          );
+          while (w.nextNode()) {
+            const len = w.currentNode.nodeValue.length;
+            if (count < pieceIndex) {
+              // keep whole
+            } else if (count === pieceIndex) {
+              w.currentNode.nodeValue = current.slice(
+                0,
+                Math.max(0, charIndex - 1)
+              );
+            } else {
+              w.currentNode.nodeValue = "";
+            }
+            count++;
+          }
+          pre.innerHTML = clone.innerHTML;
+          fast = Math.random() * 35 + 10;
+          setTimeout(step, fast);
+        }
+        step();
+      })();
+
+      /* ===========================
+       Canvas Background — Orbital Nodes
+       - clean, editor-like, two-color scheme
+    ============================ */
+      const canvas = document.getElementById("bgCanvas");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      // Simple particle effect for background
+      const particles = [];
+      for (let i = 0; i < 50; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5 + 0.5,
+          speed: Math.random() * 0.5 + 0.1,
+          opacity: Math.random() * 0.5 + 0.1
+        });
+      }
+
+      function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        particles.forEach(p => {
+          p.y += p.speed;
+          if (p.y > canvas.height) {
+            p.y = 0;
+            p.x = Math.random() * canvas.width;
+          }
+          
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0, 168, 232, ${p.opacity})`;
+          ctx.fill();
+        });
+        
+        requestAnimationFrame(drawParticles);
+      }
+      
+      drawParticles();
+
+      /* ===== HAMBURGER MENU FUNCTIONALITY ===== */
+      const hamburger = document.getElementById('hamburger');
+      const navLinks = document.getElementById('navLinks');
+      
+      hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
+      });
+      
+      // Close menu when clicking on links
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('active');
+          hamburger.classList.remove('active');
+        });
+      });
+      
+      /* ===== POPUP FUNCTIONALITY ===== */
+      const popupModal = document.getElementById('popupModal');
+      const popupClose = document.getElementById('popupClose');
+      const popupBody = document.getElementById('popupBody');
+      
+      // Popup content for each feature
+      const featureContent = {
+        performance: {
+          title: "Instant Performance",
+          content: "Our editor uses advanced rendering techniques and smart caching to deliver native-like performance in your browser. Code compiles in milliseconds, and the interface remains responsive even with large files."
+        },
+        collaboration: {
+          title: "Live Collaboration",
+          content: "Work simultaneously with team members. See cursors in real-time, track changes instantly, and communicate through integrated chat. No setup required - just share a link and start coding together."
+        },
+        ai: {
+          title: "AI Assist",
+          content: "Get intelligent code suggestions, automated refactoring, and contextual explanations. Our AI understands your codebase and helps you write better code faster with fewer errors."
+        },
+        extensions: {
+          title: "Extensions",
+          content: "Customize your editor with our extensive extension library. Add language support, themes, linters, and specialized tools through our lightweight API that won't slow down your editor."
+        },
+        privacy: {
+          title: "Private by Default",
+          content: "Your code stays on your device unless you choose to share it. We use end-to-end encryption for all shared projects and never access your code without permission."
+        },
+        shortcuts: {
+          title: "Pro Shortcuts",
+          content: "Work at expert speed with our comprehensive keyboard shortcut system. Customize keys, create macros, and navigate your codebase without ever touching the mouse."
+        }
+      };
+      
+      // Add click events to feature cards
+      document.querySelectorAll('.feature').forEach((card, index) => {
+        const featureKey = Object.keys(featureContent)[index];
+        
+        card.addEventListener('click', () => {
+          const content = featureContent[featureKey];
+          popupBody.innerHTML = `
+            <h3>${content.title}</h3>
+            <p>${content.content}</p>
+          `;
+          popupModal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        });
+      });
+      
+      // Close popup functionality
+      popupClose.addEventListener('click', closePopup);
+      popupModal.addEventListener('click', (e) => {
+        if (e.target === popupModal) closePopup();
+      });
+      
+      // Close with ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closePopup();
+      });
+      
+      function closePopup() {
+        popupModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+      
+      /* ===== SMOOTH SCROLLING ===== */
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            // Calculate the position to scroll to (accounting for fixed header)
+            const headerOffset = 70;
+            const elementPosition = targetElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
