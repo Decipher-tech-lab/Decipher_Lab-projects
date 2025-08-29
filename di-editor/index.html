@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DI Editor — Fast, Beautiful, In‑Browser Code Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+      integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <!-- ================= NAV ================= -->
+    <header class="nav">
+      <div class="container nav-wrap">
+        <a class="brand" href="#top" aria-label="DI Editor Home">
+          <span class="logo" aria-hidden="true"></span>
+          DI <b>Editor</b>
+        </a>
+        
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <nav class="nav-links" id="navLinks">
+          <a href="#features"><i class="fas fa-mobile-alt"></i> Features</a>
+          <a href="#showcase"><i class="fas fa-code"></i> Demo</a>
+          <a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a>
+          
+          <!-- Collaboration Dropdown -->
+          <div class="dropdown">
+            <a href="#collaboration" class="dropdown-trigger"><i class="fas fa-handshake"></i> Collaboration</a>
+            <div class="dropdown-menu">
+              <a href="#"><i class="fas fa-comments"></i> Chat with live notifications</a>
+              <a href="#"><i class="fas fa-link"></i> Extracting codes from links</a>
+              <a href="#"><i class="fas fa-code"></i> Turning code to links</a>
+              <a href="#"><i class="fas fa-door-open"></i> Live room</a>
+            </div>
+          </div>
+          
+          <a class="btn cta" href="#get">Launch Editor</a>
+          <a href="/login" class="user-icon" aria-label="Login">
+            <i class="fas fa-user"></i>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= HERO ================= -->
+    <section id="top" class="hero">
+      <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+      <div class="hero-card container reveal">
+        <div>
+          <div class="kicker">Next‑Gen, In‑Browser</div>
+          <h1 class="title">
+            Code, collaborate, and ship — all in one beautiful editor.
+          </h1>
+          <p class="lead">
+            DI Editor brings desktop‑grade performance to your browser with
+            real‑time collaboration, AI‑assisted coding, and a distraction‑free
+            dark theme.
+          </p>
+          <div class="hero-actions">
+            <a class="btn cta" href="#showcase">Try the Demo</a>
+            <a class="btn" href="#features">Explore Features</a>
+          </div>
+          <p class="subtle">
+            No installs · Works on any device · Private by default
+          </p>
+        </div>
+
+        <!-- Code Window -->
+        <div class="code-frame reveal delay-1" aria-label="Code sample">
+          <div class="code-head">
+            <span class="dot r"></span><span class="dot y"></span
+            ><span class="dot g"></span>
+            <span class="kbd">app.ts</span>
+          </div>
+          <pre id="codeBlock"><span class="cm">// Ultra-tiny DI server</span>
+<span class="kw">import</span> <span class="str">http</span> <span class="kw">from</span> <span class="str">'node:http'</span>;
+
+<span class="kw">const</span> <span class="fn">router</span> = {
+  <span class="fn">GET</span>: { <span class="str">'/'</span>: <span class="kw">async</span> (_req, res) =&gt; {
+    res.<span class="fn">writeHead</span>(<span class="hl">200</span>, { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> });
+    res.<span class="fn">end</span>(JSON.<span class="fn">stringify</span>({ ok: <span class="kw">true</span>, msg: <span class="str">'Hello from DI'</span> }));
+  } }
+};
+
+<span class="kw">const</span> <span class="fn">server</span> = http.<span class="fn">createServer</span>((req, res) =&gt; {
+  <span class="kw">const</span> route = router[req.<span class="fn">method</span>]?.[req.<span class="fn">url</span>];
+  <span class="kw">return</span> route ? route(req, res) : (res.<span class="fn">statusCode</span> = 404, res.<span class="fn">end</span>(<span class="str">'Not found'</span>));
+});
+
+server.<span class="fn">listen</span>(<span class="hl">8080</span>, () =&gt; console.<span class="fn">log</span>(<span class="str">'DI up on :8080'</span>));</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FEATURES ================= -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Why DI Editor</div>
+          <h2 class="section-title">Focused. Fast. Collaborative.</h2>
+        </div>
+
+        <div class="grid three">
+          <div class="feature reveal">
+            <i class="fas fa-bolt"></i>
+            <h3>Instant Performance</h3>
+            <p>
+              Native‑like speed in your browser with smart caching and a
+              zero‑jank rendering pipeline.
+            </p>
+          </div>
+          <div class="feature reveal delay-1">
+            <i class="fas fa-users"></i>
+            <h3>Live Collaboration</h3>
+            <p>
+              Pair‑program with shared cursors, presence, and conflict‑free
+              merging — no setup.
+            </p>
+          </div>
+          <div class="feature reveal delay-2">
+            <i class="fas fa-brain"></i>
+            <h3>AI Assist</h3>
+            <p>
+              Inline suggestions, explain‑this‑code, and quick‑fixes tuned for
+              modern stacks.
+            </p>
+          </div>
+          <div class="feature reveal">
+            <i class="fas fa-puzzle-piece"></i>
+            <h3>Extensions</h3>
+            <p>
+              Theme it, lint it, format it. A lightweight API for building your
+              own plugins.
+            </p>
+          </div>
+          <div class="feature reveal delay-1">
+            <i class="fas fa-lock"></i>
+            <h3>Private by Default</h3>
+            <p>
+              Projects stay on your device unless you opt‑in to sync. Your code,
+              your rules.
+            </p>
+          </div>
+          <div class="feature reveal delay-2">
+            <i class="fas fa-keyboard"></i>
+            <h3>Pro Shortcuts</h3>
+            <p>
+              Command palette, multi‑cursor, and a keyboard‑first workflow out
+              of the box.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SHOWCASE / DEMO ================= -->
+    <section id="showcase" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Product Demo</div>
+          <h2 class="section-title">A familiar editor, redesigned.</h2>
+        </div>
+
+        <div class="showcase reveal">
+          <div class="bar">
+            <button class="tab active" data-tab="code">Code</button>
+            <button class="tab" data-tab="terminal">Terminal</button>
+            <button class="tab" data-tab="git">Git</button>
+            <span class="chip" style="margin-left: auto"
+              >Press <kbd class="kbd">⌘</kbd> + <kbd class="kbd">K</kbd> for
+              palette</span
+            >
+          </div>
+
+          <div id="pane-code" class="pane active">
+            <pre><span class="cm">// components/Button.tsx</span>
+<span class="kw">type</span> Props = { label: <span class="kw">string</span>; onClick?: () =&gt; <span class="kw">void</span> };
+
+<span class="kw">export</span> <span class="kw">const</span> Button = ({ label, onClick }: Props) =&gt; {
+  <span class="kw">return</span> &lt;button className=<span class="str">"btn"</span> onClick={onClick}&gt;{label}&lt;/button&gt;;
+};</pre>
+          </div>
+
+          <div id="pane-terminal" class="pane" aria-hidden="true">
+            <pre>$ <span class="kw">npm</span> run build
+<span class="ok">✔</span> Compiled successfully in <span class="hl">2.8s</span>
+$ <span class="kw">npm</span> start
+<span class="ok">✔</span> Server running at <span class="str">http://localhost:5173</span></pre>
+          </div>
+
+          <div id="pane-git" class="pane" aria-hidden="true">
+            <pre><span class="kw">git</span> status
+On branch <span class="str">main</span>
+Your branch is up to date with <span class="str">'origin/main'</span>;
+
+Changes to be committed:
+  <span class="kw">new file:</span>   components/Button.tsx
+
+<span class="kw">git</span> commit -m <span class="str">"feat(ui): add button"</span>
+<span class="ok">[main abc123]</span> feat(ui): add button</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TESTIMONIALS ================= -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">Developers ❤ It</div>
+          <h2 class="section-title">What our users say</h2>
+        </div>
+
+        <div class="cards">
+          <div class="card reveal">
+            <div class="row">
+              <div class="avatar"><img src="img/ablinking.jpg" alt="Jane's avatar"></div>
+              <div>
+                <strong>Jane</strong>
+                <div class="stars">★★★★★</div>
+              </div>
+            </div>
+            <p>
+              “The latency feels impossible for a web app. It’s become my daily
+              driver.”
+            </p>
+          </div>
+          <div class="card reveal delay-1">
+            <div class="row">
+              <div class="avatar"><img src="img/ab.jpg" alt="Kwame's avatar"></div>
+              <div>
+                <strong>Kwame</strong>
+                <div class="stars">★★★★★</div>
+              </div>
+            </div>
+            <p>
+              “Collab is seamless. Shared cursors + palette = pair programming
+              heaven.”
+            </p>
+          </div>
+          <div class="card reveal delay-2">
+            <div class="row">
+              <div class="avatar"><img src="img/office.jpg" alt="Ada's avatar"></div>
+              <div>
+                <strong>Ada</strong>
+                <div class="stars">★★★★☆</div>
+              </div>
+            </div>
+            <p>
+              “The two‑color theme is gorgeous and easy on my eyes during long
+              sessions.”
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FAQ ================= -->
+    <section id="faq" class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div class="section-kicker">FAQ</div>
+          <h2 class="section-title">Common questions</h2>
+        </div>
+
+        <div class="faq">
+          <div class="qa reveal">
+            <button class="q">
+              <span>Is DI Editor free?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              Personal use is free. Teams can upgrade for shared workspaces and
+              SSO.
+            </div>
+          </div>
+          <div class="qa reveal delay-1">
+            <button class="q">
+              <span>Does it work offline?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              Yes. Your projects cache locally; cloud sync is opt‑in.
+            </div>
+          </div>
+          <div class="qa reveal delay-2">
+            <button class="q">
+              <span>Which languages are supported?</span
+              ><svg
+                class="chev"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path
+                  d="M6 9l6 6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+            <div class="a">
+              JS/TS, Python, C/C++, Go, Rust, and more via extensions.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer id="get">
+      <div class="container foot-wrap">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span> DI <b>Editor</b>
+        </div>
+        <div class="chips">
+          <span class="chip">Dark Theme</span>
+          <span class="chip">Live Collab</span>
+          <span class="chip">AI Assist</span>
+        </div>
+        <a class="btn cta" href="#top">Launch Now</a>
+      </div>
+    </footer>
+
+    <!-- ========= POPUP MODAL ========= -->
+    <div class="popup-modal" id="popupModal">
+      <div class="popup-content">
+        <button class="popup-close" id="popupClose">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="popup-body" id="popupBody"></div>
+      </div>
+    </div>
+
+    <!-- ========= AI CHAT BUTTON & MODAL ========= -->
+    <div class="ai-chat-btn" id="aiChatBtn">
+      <i class="fas fa-robot"></i>
+    </div>
+
+    <div class="ai-chat-modal" id="aiChatModal">
+      <div class="ai-chat-header">
+        <i class="fas fa-robot" style="color: var(--blue);"></i>
+        <h3>DI Editor Assistant</h3>
+      </div>
+      <div class="ai-chat-messages" id="aiChatMessages">
+        <div class="message ai">
+          Hello! I'm your DI Editor assistant. How can I help you with your coding today?
+        </div>
+      </div>
+      <div class="ai-chat-input">
+        <input type="text" id="aiChatInput" placeholder="Ask a question...">
+        <button id="aiChatSend"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <!-- ========= SCRIPTS ========= -->
+    <script src="js/script.js"></script>
+  </body>
+</html>
